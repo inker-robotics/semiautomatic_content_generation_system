@@ -1,0 +1,17 @@
+name: newsletter-scheduler
+
+on:
+  schedule:
+    # Runs daily at 18:00 UTC — backend skips non-publish days automatically
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger scheduled newsletter generation
+        run: |
+          curl -sf -X POST "${{ secrets.BACKEND_URL }}/api/generate/scheduled" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

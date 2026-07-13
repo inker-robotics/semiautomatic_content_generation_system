@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+python-dotenv
+pydantic
+langgraph
+langchain-openai
+feedparser
+jinja2
+requests
+playwright
+twilio
+apscheduler

@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+crewai_env/
+
+# Databases
+*.db
+*.sqlite3
+backend/enterprise_platform.db
+
+# Frontend (Node / Next.js)
+node_modules/
+.next/
+out/
+build/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated files / Uploads
+generated_newsletters/
+generated_posters/
+tech_news_posters.html
+*.log
+
+# Personal files (Exclude PowerPoint presentations)
+*.pptx
+poster automation ppt.pptx
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
