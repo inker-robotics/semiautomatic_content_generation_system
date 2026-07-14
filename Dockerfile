@@ -1,4 +1,4 @@
-# Backend
+# Base Image
 FROM python:3.11-slim
 
 # Install system dependencies for Playwright
@@ -26,17 +26,19 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH
+    PATH=/home/user/.local/bin:
 
-WORKDIR $HOME/app
+WORKDIR \C:\Users\abija/app
 
-COPY --chown=user requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY --chown=user backend/requirements.txt ./backend/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
 RUN pip install --no-cache-dir playwright
 RUN playwright install chromium
 
+# Copy all projects files (backend, frontend)
 COPY --chown=user . .
 
+WORKDIR \C:\Users\abija/app/backend
 RUN mkdir -p generated_newsletters
 
 EXPOSE 7860

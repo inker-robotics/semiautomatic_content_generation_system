@@ -130,7 +130,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 app = FastAPI(title="INKER SaaS Platform", version="3.0.0")
 app.mount("/newsletters", StaticFiles(directory="generated_newsletters"), name="newsletters")
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
