@@ -1,4 +1,4 @@
-from schemas import DynamicNewsletterPayload, NewsletterEdition
+from core.schemas import DynamicNewsletterPayload, NewsletterEdition
 
 
 def _render_edition_html(edition: NewsletterEdition, accent: str, label: str, is_student: bool) -> str:
@@ -23,7 +23,7 @@ def _render_edition_html(edition: NewsletterEdition, accent: str, label: str, is
             <p style="margin: 0 0 20px; color: {('#e2e8f0' if is_student else '#1e293b')}; line-height: 1.5; font-size: 36px; font-weight: 500;">{section_dict.get('body', '')}</p>
             <div style="font-size: 28px; color: {('#94a3b8' if is_student else '#64748b')}; background: {('#020617' if is_student else '#f1f5f9')}; padding: 16px; border-radius: 12px; border: 2px solid {accent}30;">
                 <span style="display: block; margin-bottom: 8px; color: {accent}; font-weight: 700;">📡 <strong>Source:</strong> <a href="{section_dict.get('source_url', '#')}" target="_blank" style="color: {accent}; text-decoration: underline;">{section_dict.get('source', '')}</a></span>
-                <span style="display: block; color: {('#f8fafc' if is_student else '#0f172a')}; font-weight: 600;">💡 <strong>Takeaway:</strong> {section_dict.get('key_takeaway', '')}</span>
+
             </div>
         </div>
         """
@@ -67,39 +67,43 @@ def _render_edition_html(edition: NewsletterEdition, accent: str, label: str, is
     """
 
 
-def render_single_edition_poster(edition: dict, accent: str, title: str, is_student: bool) -> str:
+def render_single_edition_poster(edition: dict, accent: str, title: str, is_student: bool, client_logo_url: str | None = None) -> str:
     """Render a single edition as an edge-to-edge mobile poster with a fixed grid layout so it doesn't overflow length-wise."""
-    sections_html = ""
-    for section in edition.get("sections", []):
-        img_url = section.get("image_url", "")
-        
-        # Purely visual card for the top story
-        if img_url:
-            img_html = f'''
-            <div style="position: relative; border-radius: 24px; overflow: hidden; flex-grow: 1; box-shadow: 0 20px 40px rgba(0,0,0,{('0.6' if is_student else '0.1')}); border: 2px solid {accent}40;">
-                <img src="{img_url}" style="width: 100%; height: 100%; display: block; object-fit: cover;" alt="Tech Image" />
-            </div>
-            '''
-        else:
-            img_html = ""
-            
-        sections_html += img_html
-
     # Theme-specific header
     if is_student:
-        header_bg = "rgba(15, 23, 42, 0.8)"
+        header_bg = "rgba(15, 23, 42, 0.85)"
         header_text_color = "#f8fafc"
         header_border = f"1px solid rgba(255,255,255,0.1)"
         label_bg = accent
         label_text = "#020617"
         bg_css = f"background-color: #020617; background-image: radial-gradient(circle at 15% 50%, {accent}20, transparent 35%), radial-gradient(circle at 85% 30%, #8b5cf620, transparent 35%);"
     else:
-        header_bg = "rgba(255, 255, 255, 0.9)"
+        header_bg = "rgba(255, 255, 255, 0.95)"
         header_text_color = "#0f172a"
         header_border = f"1px solid rgba(0,0,0,0.05)"
         label_bg = accent
         label_text = "#ffffff"
         bg_css = f"background-color: #f1f5f9; background-image: radial-gradient(circle at 15% 50%, {accent}15, transparent 35%), radial-gradient(circle at 85% 30%, #f59e0b15, transparent 35%);"
+
+    sections_html = ""
+    for section in edition.get("sections", []):
+        img_url = section.get("image_url", "")
+        
+        # News Card with Image and Text Description
+        if img_url:
+            img_html = f'''
+            <div style="position: relative; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; background: {header_bg}; box-shadow: 0 20px 40px rgba(0,0,0,{('0.6' if is_student else '0.1')}); border: 2px solid {accent}40; margin-bottom: 30px;">
+                <img src="{img_url}" style="width: 100%; height: 480px; display: block; object-fit: cover;" alt="Tech Image" />
+                <div style="padding: 36px;">
+                    <h2 style="margin: 0 0 16px; font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; color: {header_text_color}; line-height: 1.2;">{section.get('title', '')}</h2>
+                    <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 32px; color: {('#cbd5e1' if is_student else '#475569')}; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">{section.get('body', '')}</p>
+                </div>
+            </div>
+            '''
+        else:
+            img_html = ""
+            
+        sections_html += img_html
     
     return f"""
     <!DOCTYPE html>
@@ -107,11 +111,11 @@ def render_single_edition_poster(edition: dict, accent: str, title: str, is_stud
     <head>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@700;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
         <style>
             .poster-container {{
                 width: 1080px; 
-                height: 1080px; 
+                height: 1920px; 
                 {bg_css}
                 font-family: 'Inter', sans-serif;
                 box-sizing: border-box;
@@ -175,6 +179,11 @@ def render_single_edition_poster(edition: dict, accent: str, title: str, is_stud
     <body style="margin: 0; padding: 0;">
         <div class="poster-container">
             <!-- Authentic Branding -->
+            {f'''
+            <div class="inker-logo">
+                <img src="{client_logo_url}" style="height: 80px; max-width: 300px; border-radius: 8px; object-fit: contain;" />
+            </div>
+            ''' if client_logo_url else f'''
             <div class="inker-logo">
                 <div class="brand-logo-box">IR</div>
                 <div class="brand-text-box">
@@ -182,6 +191,7 @@ def render_single_edition_poster(edition: dict, accent: str, title: str, is_stud
                     <span class="brand-text-2">Tech Brief</span>
                 </div>
             </div>
+            '''}
             
             <!-- Header section -->
             <div style="background: {header_bg}; border: {header_border}; border-radius: 24px; padding: 40px; box-shadow: 0 16px 40px rgba(0,0,0,{('0.4' if is_student else '0.05')}); flex-shrink: 0;">

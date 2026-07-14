@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import DayAgentConfig, PipelineExecution, SecureApproval
-from newsletter_renderer import render_dual_newsletter_email_html, render_single_edition_poster
-from config import PUBLISH_WEEKDAYS, WEEKDAY_NAMES
+from core.database import SessionLocal
+from core.models import DayAgentConfig, PipelineExecution, SecureApproval
+from services.newsletter_renderer import render_dual_newsletter_email_html, render_single_edition_poster
+from core.config import PUBLISH_WEEKDAYS, WEEKDAY_NAMES
 
 
 def _config_to_dict(config: DayAgentConfig) -> dict:
@@ -24,6 +24,7 @@ def _config_to_dict(config: DayAgentConfig) -> dict:
         "is_active": config.is_active,
         "target_time": config.target_time,
         "target_phone_number": config.target_phone_number,
+        "client_logo_url": getattr(config, "client_logo_url", None),
     }
 
 
@@ -35,11 +36,12 @@ def get_publish_weekday_for_generation(reference: datetime | None = None) -> int
     return weekday if weekday in PUBLISH_WEEKDAYS else None
 
 
-def get_day_config(db: Session, publish_weekday: int) -> DayAgentConfig | None:
+def get_day_config(db: Session, publish_weekday: int, user_id: int) -> DayAgentConfig | None:
     return (
         db.query(DayAgentConfig)
         .filter(
             DayAgentConfig.publish_weekday == publish_weekday,
+            DayAgentConfig.user_id == user_id,
             DayAgentConfig.is_active.is_(True),
         )
         .first()
@@ -59,57 +61,47 @@ def generate_dynamic_image(prompt: str) -> str:
     fallback_url = random.choice(fallback_urls)
     
     if not api_key:
-        print("⚠️ TOGETHER_API_KEY not found. Using fallback image.")
+        print("⚠️ TOGETHER_API_KEY not set. Falling back to generic Unsplash image.")
         return fallback_url
-    
-    # Delay before API call to avoid rate limits
-    time.sleep(2)
-    
-    print(f"🎨 Calling Together AI for: {prompt[:40]}...")
-    url = "https://api.together.xyz/v1/images/generations"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    
-    data = {
-        "model": "black-forest-labs/FLUX.1-schnell", 
-        "prompt": f"{prompt}, highly engaging satirical caricature style, vibrant colors, conceptual art, interesting at first sight, 1:1 ratio, no text.",
-        "width": 1024,
-        "height": 1024,
-        "steps": 4,
-        "n": 1
-    }
-    
-    max_retries = 2
-    for attempt in range(max_retries):
-        try:
-            res = requests.post(url, headers=headers, json=data, timeout=30)
-            if res.status_code == 200:
-                return res.json()["data"][0]["url"]
-            elif res.status_code == 429:
-                wait_time = 10
-                print(f"⚠️ Rate limited. Waiting {wait_time}s before retry (attempt {attempt + 1}/{max_retries})...")
-                time.sleep(wait_time)
-                continue
-            else:
-                print(f"⚠️ Image API error {res.status_code}: {res.text[:200]}")
-                return fallback_url
-        except Exception as e:
-            print(f"⚠️ Image gen failed: {e}")
-            if attempt < max_retries - 1:
-                time.sleep(3)
-                continue
-            return fallback_url
-    
-    print("⚠️ Using fallback image due to rate limits.")
-    return fallback_url
+        
+    try:
+        url = "https://api.together.xyz/v1/images/generations"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        # Force a highly visual, bold style with no text
+        enhanced_prompt = f"Breathtaking, highly detailed, photorealistic cinematic lighting. Focus tightly on the specific subject. Extremely high quality, masterpiece. No text anywhere. {prompt}"
+        
+        print(f"🎨 Calling Together AI for: {prompt[:50]}...")
+        payload = {
+            "model": "black-forest-labs/FLUX.1-schnell",
+            "prompt": enhanced_prompt,
+            "steps": 4,
+            "width": 1024,
+            "height": 512,
+            "n": 1
+        }
+        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "data" in data and len(data["data"]) > 0:
+                return data["data"][0]["url"]
+                
+        print(f"⚠️ Together AI API error: {response.text}")
+        return fallback_url
+    except Exception as e:
+        print(f"⚠️ Image generation failed: {e}")
+        return fallback_url
 
 
 def render_html_to_png(html_str: str, output_path: str) -> bool:
-    """Render HTML string to PNG using Playwright with ultra-high-DPI for WhatsApp."""
+    """Uses Playwright to render an HTML string exactly as it would appear in a browser."""
+    from playwright.sync_api import sync_playwright
+    
     try:
-        from playwright.sync_api import sync_playwright
-        
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 args=["--no-sandbox", "--disable-dev-shm-usage"]
@@ -147,7 +139,7 @@ def run_pipeline(execution_id: int):
         execution.status = "processing"
         db.commit()
 
-        day_config = get_day_config(db, execution.publish_weekday)
+        day_config = get_day_config(db, execution.publish_weekday, execution.user_id)
         if not day_config:
             raise ValueError(f"No active agent config for weekday {execution.publish_weekday}")
 
@@ -232,30 +224,26 @@ def run_pipeline(execution_id: int):
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(newsletter_html)
 
-        # --- 5. RENDER SEPARATE MOBILE-OPTIMIZED PNGs ---
+        # --- 5. DOWNLOAD RAW AI IMAGE FOR WHATSAPP ---
         base_dir = os.path.dirname(os.path.abspath(__file__))
         png_paths = {}
-        theme_colors = ["#06b6d4", "#f59e0b", "#10b981", "#8b5cf6", "#ec4899"]
         
-        idx = 0
         for aud_name, edition_data in editions.items():
-            accent = theme_colors[idx % len(theme_colors)]
-            is_student_theme = (idx % 2 == 0)  # Alternate dark/light themes automatically
-            title_display = f"✨ {aud_name.capitalize()} Edition"
-            
             png_path = os.path.join(base_dir, "generated_newsletters", f"edition_{execution_id}_{aud_name}.jpeg")
-            html = render_single_edition_poster(
-                edition=edition_data,
-                accent=accent,
-                title=title_display,
-                is_student=is_student_theme
-            )
-            success = render_html_to_png(html, png_path)
-            if success:
-                png_paths[aud_name] = png_path
-            else:
-                print(f"⚠️ Failed to render PNG for {aud_name}")
-            idx += 1
+            
+            # Use the first section's image as the poster
+            sections = edition_data.get("sections", [])
+            if sections and sections[0].get("image_url"):
+                img_url = sections[0]["image_url"]
+                try:
+                    import urllib.request
+                    req = urllib.request.Request(img_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req) as response, open(png_path, 'wb') as out_file:
+                        out_file.write(response.read())
+                    png_paths[aud_name] = png_path
+                    print(f"📥 Downloaded raw AI image for {aud_name}: {png_path}")
+                except Exception as e:
+                    print(f"⚠️ Failed to download raw image for {aud_name}: {e}")
 
         execution.execution_log = json.dumps(payload)
         execution.newsletter_html = newsletter_html
@@ -263,14 +251,17 @@ def run_pipeline(execution_id: int):
         execution.status = "awaiting_review"
         db.commit()
 
-        # --- 6. DISPATCH WHATSAPP DIRECTLY ---
-        print("📱 Starting WhatsApp direct dispatch...")
+                # --- 6. DISPATCH WHATSAPP DIRECTLY ---
+        print("?? Starting WhatsApp direct dispatch...")
         try:
+            from dotenv import load_dotenv
+            env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+            load_dotenv(env_path, override=True)
             target_phone = config_dict.get("target_phone_number")
-            meta_token = os.getenv("META_ACCESS_TOKEN")
+            meta_token = os.getenv("META_WHATSAPP_TOKEN")
             
             if meta_token and meta_token != "YOUR_META_TOKEN_HERE":
-                from whatsapp_meta_service import dispatch_whatsapp_meta_newsletter
+                from services.whatsapp_meta_service import dispatch_whatsapp_meta_newsletter
                 wa_result = dispatch_whatsapp_meta_newsletter(
                     payload=payload,
                     edition_title=config_dict["edition_title"],
@@ -280,16 +271,9 @@ def run_pipeline(execution_id: int):
                     target_phone_number=target_phone
                 )
             else:
-                from whatsapp_service import dispatch_whatsapp_newsletter
-                wa_result = dispatch_whatsapp_newsletter(
-                    payload=payload,
-                    edition_title=config_dict["edition_title"],
-                    png_paths=png_paths,
-                    edit_url=edit_url,
-                    approve_url=approve_url,
-                    target_phone_number=target_phone
-                )
-            print(f"📱 WhatsApp dispatch completed with result: {wa_result}")
+                wa_result = "failed: META_WHATSAPP_TOKEN is missing in .env!"
+                print("? META WHATSAPP TOKEN IS MISSING! Cannot send via Meta Graph API.")
+            print(f"? WhatsApp dispatch completed with result: {wa_result}")
         except Exception as e:
             print(f"❌ WHATSAPP DISPATCH FAILED: {type(e).__name__}: {e}")
             import traceback
@@ -307,18 +291,19 @@ def run_pipeline(execution_id: int):
         db.close()
 
 
-def start_scheduled_generation(db: Session, publish_weekday: int | None = None) -> dict:
+def start_scheduled_generation(db: Session, publish_weekday: int | None = None, user_id: int = 1) -> dict:
     weekday = publish_weekday if publish_weekday is not None else get_publish_weekday_for_generation()
     if weekday is None:
         return {"started": False, "reason": "Tomorrow is not a configured publish day (Mon/Tue/Fri only)."}
 
-    config = get_day_config(db, weekday)
+    config = get_day_config(db, weekday, user_id)
     if not config:
         return {"started": False, "reason": f"No active config for {WEEKDAY_NAMES.get(weekday, weekday)}."}
 
     execution = PipelineExecution(
         topic=config.edition_title,
         publish_weekday=weekday,
+        user_id=user_id,
         status="pending",
     )
     db.add(execution)

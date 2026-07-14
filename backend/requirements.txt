@@ -13,3 +13,7 @@ requests
 playwright
 twilio
 apscheduler
+passlib[bcrypt]
+pyjwt
+python-multipart
+email-validator

@@ -1,7 +1,7 @@
 import json
 from sqlalchemy.orm import Session
-from models import DayAgentConfig
-from config import DEFAULT_RSS_FEEDS, WEEKDAY_NAMES, ALL_WEEKDAY_NAMES
+from core.models import DayAgentConfig
+from core.config import DEFAULT_RSS_FEEDS, WEEKDAY_NAMES, ALL_WEEKDAY_NAMES
 
 
 DEFAULT_CONFIGS = [
@@ -66,7 +66,7 @@ DEFAULT_CONFIGS = [
         ),
         "writer_system_prompt": (
             "Write a lively Friday newsletter that makes readers aware of fascinating recent tech innovations. "
-            "Include practical learning angles, memorable takeaways, and conversational tone for students. "
+            "Include practical learning angles, interesting insights, and conversational tone for students. "
             "Faculty edition should connect stories to broader trends, ethics, and classroom discussion prompts."
         ),
     },
