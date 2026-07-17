@@ -52,10 +52,7 @@ def generate_dynamic_image(prompt: str) -> str:
     """Calls Together AI to generate a unique image based on the specific news prompt."""
     api_key = os.getenv("TOGETHER_API_KEY")
     fallback_urls = [
-        "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1563986768609-322da13575f2?auto=format&fit=crop&w=1200&q=80",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Artificial_intelligence_prompt_image.jpg/1200px-Artificial_intelligence_prompt_image.jpg"
     ]
     import random
     fallback_url = random.choice(fallback_urls)

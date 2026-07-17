@@ -24,10 +24,8 @@ def get_source_url_suffix(edition: dict) -> str:
     sections = edition.get('sections', [])
     if sections:
         url = sections[0].get("source_url", "inkerrobotics.com")
-        if url.startswith("https://"):
-            return url[8:]
-        if url.startswith("http://"):
-            return url[7:]
+        # Meta requires full https:// scheme to make the link tappable on Android
+        pass
         return url
     return "inkerrobotics.com"
 
