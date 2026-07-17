@@ -24,7 +24,7 @@ class GraphState(TypedDict):
 
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
-structured_llm = llm.with_structured_output(DynamicNewsletterPayload)
+structured_llm = llm.with_structured_output(DynamicNewsletterPayload, method='function_calling')
 
 
 def fetch_news_node(state: GraphState):
