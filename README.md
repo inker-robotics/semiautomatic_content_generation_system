@@ -39,3 +39,19 @@ This repository is ready to be pushed to GitHub and deployed on Hugging Face Spa
 5. Hugging Face will automatically build the Dockerfile and launch the dashboard!
 
 > **Important Note:** Hugging Face Spaces go to sleep if there is no web traffic. For the time-scheduler to work 24/7 without you opening the dashboard, you may need to upgrade the Space to "Always-on".
+
+## WhatsApp Production Configuration (Permanent Token)
+
+Currently, the system uses a 24-hour Temporary Access Token for development. For the final 24/7 production deployment, a Permanent System User Token must be generated and added to the Hugging Face Space Secrets.
+
+**Steps to Generate Permanent Token:**
+1. Navigate to [Meta Business Settings -> System Users](https://business.facebook.com/settings/system-users).
+2. Click **Add** to create a new System User (e.g., "Inker News Bot") and set the role to **Admin**.
+3. Click **Add Assets**, select **Apps**, choose the WhatsApp App, and enable **Full Control (Manage App)**.
+4. Click **Generate New Token**.
+5. **CRITICAL:** Set Token Expiration to **Never**.
+6. Check the following permissions:
+   - whatsapp_business_messaging
+   - whatsapp_business_management
+7. Click **Generate Token**. Copy this token immediately.
+8. Add this token as the META_WHATSAPP_TOKEN secret in Hugging Face Spaces.
