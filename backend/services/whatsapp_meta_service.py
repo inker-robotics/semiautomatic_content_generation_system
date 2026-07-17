@@ -116,7 +116,7 @@ def dispatch_whatsapp_meta_newsletter(
                 "to": recipient_number,
                 "type": "template",
                 "template": {
-                    "name": "daily_tech_poster",
+                    "name": "daily_tech_poste",
                     "language": {
                         "code": "en"
                     },
