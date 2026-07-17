@@ -68,3 +68,10 @@ When the permanent token is generated later, you can add it to the live server w
 6. Click **Save Changes**. 
 
 Render will automatically restart the server, and the WhatsApp dispatcher will instantly become active!
+
+### Note on `META_RECIPIENT_NUMBER` (The Sandbox Loophole)
+While you are using a **Temporary Access Token**, Meta places your WhatsApp app in a strict "Sandbox Mode". In this mode, Meta will reject messages sent to dynamic numbers provided by the frontend. It will *only* send messages to the single, verified phone number registered in your Meta Developer Dashboard.
+
+To prevent the server from crashing during this Sandbox Mode, the backend uses the `META_RECIPIENT_NUMBER` environment variable as a hardcoded fallback loophole. 
+
+Once your manager generates the **Permanent Token**, your WhatsApp app goes into "Live Mode." At that point, you can safely remove the `META_RECIPIENT_NUMBER` environment variable from Render, and the system will dynamically deliver newsletters to whatever phone numbers your clients enter on the frontend!
