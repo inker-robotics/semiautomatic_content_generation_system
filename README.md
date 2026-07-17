@@ -6,24 +6,23 @@ This repository contains the completely finalized, streamlined architecture for 
 
 This project is a single unified FastAPI backend that also serves the HTML dashboard UI directly. There is no separate bloated frontend framework.
 
-### \ackend/\ - The Core Engine
-* **\main.py\** - The FastAPI entrypoint. Handles the API routes, serves the Web UI dashboard, and launches background tasks for image generation.
-* **\engine.py\** - The heart of the AI. It uses CrewAI to write the newsletter, requests image generation via Together API (FLUX), and coordinates the workflow.
-* **\.env\** - Your single source of truth for API keys. It contains Groq, OpenAI, Tavily, and your Meta WhatsApp keys.
+### `backend/` - The Core Engine
+* **`main.py`** - The FastAPI entrypoint. Handles the API routes, serves the Web UI dashboard, and launches background tasks for image generation.
+* **`engine.py`** - The heart of the AI. It uses CrewAI to write the newsletter, requests image generation via Together API (FLUX), and coordinates the workflow.
+* **`.env`** - Your single source of truth for API keys. It contains Groq, OpenAI, Tavily, and your Meta WhatsApp keys.
 
-### \ackend/frontend/\ - The Web UI
-* **\index.html\** - A lightweight, ultra-fast vanilla HTML/JS dashboard styled with Tailwind CSS. This is the interface you use to schedule and configure the agents.
-* **\logos/\** - Contains the Inker Robotics logos used in the posters.
+### `backend/frontend/` - The Web UI
+* **`index.html`** - A lightweight, ultra-fast vanilla HTML/JS dashboard styled with Tailwind CSS. This is the interface you use to schedule and configure the agents.
+* **`logos/`** - Contains the Inker Robotics logos used in the posters.
 
-### \ackend/services/\ - Independent Modules
-* **\
-ewsletter_renderer.py\** - Takes the raw JSON newsletter output and uses Playwright (a headless browser) to take a high-resolution screenshot of the poster template.
-* **\whatsapp_meta_service.py\** - Uploads the generated posters to Meta and dispatches them directly to the target WhatsApp number using the official Meta Graph API.
+### `backend/services/` - Independent Modules
+* **`newsletter_renderer.py`** - Takes the raw JSON newsletter output and uses Playwright (a headless browser) to take a high-resolution screenshot of the poster template.
+* **`whatsapp_meta_service.py`** - Uploads the generated posters to Meta and dispatches them directly to the target WhatsApp number using the official Meta Graph API.
 
-### \ackend/core/\ - Configuration & Database
-* **\config.py\** - Loads the \.env\ variables.
-* **\database.py\** & **\models.py\** - Sets up the SQLite database (\enterprise_platform.db\) to store your scheduled days and past executions.
-* **\schemas.py\** - Pydantic models for API validation.
+### `backend/core/` - Configuration & Database
+* **`config.py`** - Loads the `.env` variables.
+* **`database.py`** & **`models.py`** - Sets up the SQLite database (`app.db`) to store your scheduled days and past executions.
+* **`schemas.py`** - Pydantic models for API validation.
 
 ---
 
