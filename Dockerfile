@@ -26,9 +26,9 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:
+    PATH=/home/user/.local/bin:$PATH
 
-WORKDIR \C:\Users\abija/app
+WORKDIR /app
 
 COPY --chown=user backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
