@@ -99,7 +99,7 @@ DEFAULT_CONFIGS = [
 ]
 
 
-def seed_day_configs(db: Session):
+def seed_day_configs(db: Session, default_user_id: int = None):
     feeds_json = json.dumps(DEFAULT_RSS_FEEDS)
     for cfg in DEFAULT_CONFIGS:
         existing = (
@@ -118,6 +118,7 @@ def seed_day_configs(db: Session):
                 writer_system_prompt=cfg["writer_system_prompt"],
                 rss_feeds=feeds_json,
                 is_active=cfg["publish_weekday"] in {0, 2, 4},
+                user_id=default_user_id
             )
         )
     db.commit()

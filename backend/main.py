@@ -155,10 +155,9 @@ def on_startup():
             default_user = User(email="admin@inker.com", hashed_password=get_password_hash("password123"))
             db.add(default_user)
             db.commit()
-            seed_day_configs(db) # Seed default agents for admin
             
-            # Assign the seeded agents to this default user
-            db.query(DayAgentConfig).update({DayAgentConfig.user_id: default_user.id})
+            # Seed default agents for admin and assign to the default user
+            seed_day_configs(db, default_user.id)
             db.commit()
     finally:
         db.close()
