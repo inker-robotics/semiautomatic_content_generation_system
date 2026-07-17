@@ -219,7 +219,8 @@ def render_dual_newsletter_email_html(payload: dict, edition_title: str, edit_ur
         
         for aud_name, edition in editions.items():
             for i, sec in enumerate(edition["sections"]):
-                sec["image_url"] = payload["editions"][aud_name]["sections"][i].get("image_url", "")
+                raw_edition = payload.get("editions", payload).get(aud_name, {})
+                sec["image_url"] = raw_edition.get("sections", [])[i].get("image_url", "") if i < len(raw_edition.get("sections", [])) else ""
             
     except Exception as e:
         return f"<p style='color: red;'>Error parsing payload: {e}</p>"
