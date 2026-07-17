@@ -2,8 +2,8 @@ name: newsletter-scheduler
 
 on:
   schedule:
-    # Runs daily at 18:00 UTC — backend skips non-publish days automatically
-    - cron: "0 18 * * *"
+    # Runs daily at 04:30 UTC (which is exactly 10:00 AM IST)
+    - cron: "30 4 * * *"
   workflow_dispatch:
 
 jobs:
