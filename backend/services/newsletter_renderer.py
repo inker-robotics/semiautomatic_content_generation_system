@@ -218,8 +218,7 @@ def render_dual_newsletter_email_html(payload: dict, edition_title: str, edit_ur
         editions = data.model_dump()
         
         for aud_name, edition in editions.items():
-            edition_dump = edition.model_dump()
-            for i, sec in enumerate(edition_dump["sections"]):
+            for i, sec in enumerate(edition["sections"]):
                 sec["image_url"] = payload["editions"][aud_name]["sections"][i].get("image_url", "")
             
     except Exception as e:
