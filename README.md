@@ -27,22 +27,22 @@ ewsletter_renderer.py\** - Takes the raw JSON newsletter output and uses Playwri
 
 ---
 
-## Deployment (Hugging Face Spaces)
+## Deployment (Render.com)
 
 This repository is ready to be pushed to GitHub and deployed on Hugging Face Spaces using the provided \Dockerfile\.
 
 ### Steps to Deploy:
 1. Push this repository to your company's GitHub.
-2. In Hugging Face Spaces, create a new **Docker** Space.
-3. Link your GitHub repository.
-4. Add all the keys from your \.env\ file as **Secrets** in the Hugging Face Space settings.
-5. Hugging Face will automatically build the Dockerfile and launch the dashboard!
+2. On Render.com, create a new **Web Service** and connect your GitHub repository.
 
-> **Important Note:** Hugging Face Spaces go to sleep if there is no web traffic. For the time-scheduler to work 24/7 without you opening the dashboard, you may need to upgrade the Space to "Always-on".
+4. Add all the keys from your \.env\ file as **Secrets** in the Hugging Face Space settings.
+4. Render will automatically detect the Dockerfile, build it, and launch your dashboard!
+
+> **Important Note:** Render Free Tier goes to sleep after 15 minutes of inactivity. To keep the time-scheduler running 24/7 for free, set up a cron job (e.g., via cron-job.org) to ping your Render URL every 10 minutes.
 
 ## WhatsApp Production Configuration (Permanent Token)
 
-Currently, the system uses a 24-hour Temporary Access Token for development. For the final 24/7 production deployment, a Permanent System User Token must be generated and added to the Hugging Face Space Secrets.
+Currently, the system uses a 24-hour Temporary Access Token for development. For the final 24/7 production deployment, a Permanent System User Token must be generated and added to the Render Environment Variables.
 
 **Steps to Generate Permanent Token:**
 1. Navigate to [Meta Business Settings -> System Users](https://business.facebook.com/settings/system-users).
@@ -54,4 +54,4 @@ Currently, the system uses a 24-hour Temporary Access Token for development. For
    - whatsapp_business_messaging
    - whatsapp_business_management
 7. Click **Generate Token**. Copy this token immediately.
-8. Add this token as the META_WHATSAPP_TOKEN secret in Hugging Face Spaces.
+8. Add this token as the META_WHATSAPP_TOKEN environment variable in Render.
