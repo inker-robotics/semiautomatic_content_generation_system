@@ -38,7 +38,7 @@ RUN playwright install chromium
 # Copy all projects files (backend, frontend)
 COPY --chown=user . .
 
-WORKDIR \C:\Users\abija/app/backend
+WORKDIR /app/backend
 RUN mkdir -p generated_newsletters
 
 EXPOSE 7860
