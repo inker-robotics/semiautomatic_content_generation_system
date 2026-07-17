@@ -55,3 +55,16 @@ Currently, the system uses a 24-hour Temporary Access Token for development. For
    - whatsapp_business_management
 7. Click **Generate Token**. Copy this token immediately.
 8. Add this token as the META_WHATSAPP_TOKEN environment variable in Render.
+
+### Adding the Token Later (If Deploying Today)
+If you deploy the application to Render today without the permanent token, the web app and AI scheduler will still function normally (it will just skip sending the WhatsApp message). 
+
+When the permanent token is generated later, you can add it to the live server without touching the code:
+1. Log into your Render.com dashboard.
+2. Select the `inker-news-bot` Web Service.
+3. On the left sidebar, click **Environment**.
+4. Click **Add Environment Variable**.
+5. Key: `META_WHATSAPP_TOKEN` | Value: *(Paste the permanent token)*
+6. Click **Save Changes**. 
+
+Render will automatically restart the server, and the WhatsApp dispatcher will instantly become active!
