@@ -173,7 +173,7 @@ def run_pipeline(execution_id: int):
         # --- 1. GENERATE DYNAMIC IMAGES FOR EACH SECTION ---
         print("🎨 Generating Together AI images for news items...")
         image_count = 0
-        editions = payload.get("editions", {})
+        editions = payload.get("editions", payload)
         for aud_name, edition in editions.items():
             sections = edition.get("sections", [])
             for i, section in enumerate(sections):
