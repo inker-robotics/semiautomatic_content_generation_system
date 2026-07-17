@@ -89,7 +89,7 @@ def dispatch_whatsapp_meta_newsletter(
     }
 
     messages_to_send = []
-    for aud_name, edition in payload.get('editions', {}).items():
+    for aud_name, edition in payload.get('editions', payload).items():
         if 'student' in aud_name.lower():
             label = "⚡ Student Edition"
         else:
