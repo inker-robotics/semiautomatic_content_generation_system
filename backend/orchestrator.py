@@ -8,7 +8,7 @@ import feedparser
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 
-from core.schemas import DynamicNewsletterPayload
+from core.schemas import NewsletterPayload
 from core.database import SessionLocal
 from core.models import NewsHistory
 
@@ -24,7 +24,7 @@ class GraphState(TypedDict):
 
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
-structured_llm = llm.with_structured_output(DynamicNewsletterPayload, method='function_calling')
+structured_llm = llm.with_structured_output(NewsletterPayload, method='function_calling')
 
 
 def fetch_news_node(state: GraphState):

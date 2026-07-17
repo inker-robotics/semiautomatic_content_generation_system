@@ -26,8 +26,9 @@ class NewsletterEdition(BaseModel):
     closing: str = Field(description="Closing paragraph tying themes together.")
     call_to_action: str = Field(description="Inspiring call to action.")
 
-class DynamicNewsletterPayload(BaseModel):
-    editions: dict[str, NewsletterEdition] = Field(description="Dictionary where the key is the audience name (in lowercase, e.g. 'student', 'faculty', 'alumni') and the value is their tailored edition.")
+class NewsletterPayload(BaseModel):
+    student: NewsletterEdition = Field(description="The newsletter edition specifically tailored for students.")
+    faculty: NewsletterEdition = Field(description="The newsletter edition specifically tailored for faculty and researchers.")
 
 class DayAgentConfigCreate(BaseModel):
     publish_weekday: int

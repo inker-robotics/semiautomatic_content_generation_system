@@ -29,7 +29,7 @@ from scripts.seed import seed_day_configs
 
 # Ensure directories
 os.makedirs("generated_newsletters", exist_ok=True)
-os.makedirs("frontend/logos", exist_ok=True)
+os.makedirs("../frontend/logos", exist_ok=True)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -134,7 +134,7 @@ app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
-    with open("frontend/index.html", "r", encoding="utf-8") as f:
+    with open("../frontend/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
 app.add_middleware(
@@ -385,7 +385,7 @@ def delete_day_agent(agent_id: int, db: Session = Depends(get_db), current_user:
 async def upload_logo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
     extension = file.filename.split(".")[-1]
     filename = f"logo_{current_user.id}_{uuid.uuid4().hex}.{extension}"
-    file_path = os.path.join("frontend", "logos", filename)
+    file_path = os.path.join("..", "frontend", "logos", filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return {"url": f"/static/logos/{filename}"}

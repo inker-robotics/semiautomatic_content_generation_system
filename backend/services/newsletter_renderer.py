@@ -1,4 +1,4 @@
-from core.schemas import DynamicNewsletterPayload, NewsletterEdition
+from core.schemas import NewsletterPayload, NewsletterEdition
 
 
 def _render_edition_html(edition: NewsletterEdition, accent: str, label: str, is_student: bool) -> str:
@@ -214,8 +214,8 @@ def render_single_edition_poster(edition: dict, accent: str, title: str, is_stud
 
 def render_dual_newsletter_email_html(payload: dict, edition_title: str, edit_url: str, approve_url: str, share_url: str) -> str:
     try:
-        data = DynamicNewsletterPayload(**payload)
-        editions = data.editions
+        data = NewsletterPayload(**payload.get("editions", payload))
+        editions = data.model_dump()
         
         for aud_name, edition in editions.items():
             edition_dump = edition.model_dump()
