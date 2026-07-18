@@ -270,6 +270,19 @@ def run_pipeline(execution_id: int):
             else:
                 wa_result = "failed: META_WHATSAPP_TOKEN is missing in .env!"
                 print("? META WHATSAPP TOKEN IS MISSING! Cannot send via Meta Graph API.")
+
+            # --- 7. TELEGRAM FALLBACK ---
+            from services.telegram_service import send_poster_to_telegram
+            
+            # Since png_paths is a dictionary {audience: path}, we'll dispatch all audiences
+            for aud_key, img_path in png_paths.items():
+                if img_path:
+                    # Create a nice Telegram caption
+                    caption = f"🚀 <b>New AI Poster: {config_dict['edition_title']}</b>\n\n"
+                    caption += "The AI has finished writing the newsletter. Check it out on the web dashboard!\n"
+                    caption += f"<a href='{share_url}'>🌐 Read Full Newsletter</a>"
+                    
+                    send_poster_to_telegram(img_path, caption)
             print(f"? WhatsApp dispatch completed with result: {wa_result}")
         except Exception as e:
             print(f"❌ WHATSAPP DISPATCH FAILED: {type(e).__name__}: {e}")

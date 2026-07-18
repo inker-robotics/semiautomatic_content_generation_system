@@ -39,6 +39,20 @@ This repository is ready to be pushed to GitHub and deployed on Hugging Face Spa
 
 > **Important Note:** Render Free Tier goes to sleep after 15 minutes of inactivity. To keep the time-scheduler running 24/7 for free, set up a cron job (e.g., via cron-job.org) to ping your Render URL every 10 minutes.
 
+## Telegram Bot Fallback (Fail-safe)
+
+Because Meta's anti-spam Sandbox is extremely strict, the system includes a **Telegram Bot integration** that automatically sends a backup copy of every poster to your Telegram.
+
+**To set up Telegram:**
+1. Open Telegram and search for **@BotFather**.
+2. Type `/newbot` and follow the prompts to get your **HTTP API Token**.
+3. Create a new Telegram Group, add your new bot to it, and use [IDBot](https://t.me/myidbot) or a similar tool to get the Group's **Chat ID** (usually starts with a minus sign, e.g., `-10012345678`).
+4. Add these two variables to your Render Environment Variables:
+   - `TELEGRAM_BOT_TOKEN`: *your_bot_token*
+   - `TELEGRAM_CHAT_ID`: *your_chat_id*
+
+Once added, the AI will dual-dispatch every poster to both WhatsApp and Telegram simultaneously!
+
 ## WhatsApp Production Configuration (Permanent Token)
 
 Currently, the system uses a 24-hour Temporary Access Token for development. For the final 24/7 production deployment, a Permanent System User Token must be generated and added to the Render Environment Variables.
