@@ -68,9 +68,12 @@ When the permanent token is generated later, you can add it to the live server w
 
 Render will automatically restart the server, and the WhatsApp dispatcher will instantly become active!
 
-### Note on `META_RECIPIENT_NUMBER` (The Sandbox Loophole)
-While you are using a **Temporary Access Token**, Meta places your WhatsApp app in a strict "Sandbox Mode". In this mode, Meta will reject messages sent to dynamic numbers provided by the frontend. It will *only* send messages to the single, verified phone number registered in your Meta Developer Dashboard.
+### Going Live (Messaging Any Client Number)
+Currently, your Meta App is in **Development Mode** (Sandbox). In this mode, Meta strictly prevents spam by only allowing the AI to send messages to the 5 specific phone numbers you manually verified in the API Setup page. 
 
-To prevent the server from crashing during this Sandbox Mode, the backend uses the `META_RECIPIENT_NUMBER` environment variable as a hardcoded fallback loophole. 
+To make the app "client-friendly" so it can send newsletters to **any** phone number on Earth, you must take the app out of the Sandbox:
 
-Once your manager generates the **Permanent Token**, your WhatsApp app goes into "Live Mode." At that point, you can safely remove the `META_RECIPIENT_NUMBER` environment variable from Render, and the system will dynamically deliver newsletters to whatever phone numbers your clients enter on the frontend!
+1. **Complete Business Verification**: Your manager must upload official legal documents (business registration, utility bills, etc.) to Meta via the Business Settings dashboard to prove Inker Robotics is a legally registered company.
+2. **Switch to Live Mode**: Once Meta approves the documents, go to the Meta Developer Dashboard (`developers.facebook.com/apps`). At the very top of the screen, click the toggle switch to change the **App Mode** from **Development** to **Live**.
+
+Once the app is in Live Mode, all sandbox restrictions are permanently lifted. The AI will instantly be able to dispatch posters to whatever phone numbers your future clients enter on the frontend dashboard!
