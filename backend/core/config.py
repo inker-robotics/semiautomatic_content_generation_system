@@ -14,8 +14,8 @@ CORS_ORIGINS = [
     if origin.strip()
 ]
 
-# Publish on Monday(0), Tuesday(1), Friday(4)
-PUBLISH_WEEKDAYS = {0, 1, 4}
+# Publish any day of the week
+PUBLISH_WEEKDAYS = {0, 1, 2, 3, 4, 5, 6}
 WEEKDAY_NAMES = {0: "Monday", 1: "Tuesday", 4: "Friday"}
 ALL_WEEKDAY_NAMES = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
