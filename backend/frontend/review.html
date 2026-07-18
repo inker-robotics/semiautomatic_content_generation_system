@@ -31,7 +31,16 @@
             Tell the AI exactly what you didn't like or what you want changed. The agents will automatically redesign and rewrite the poster based on your feedback.
         </p>
 
-        <textarea id="feedbackText" rows="4" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none mb-6" placeholder="e.g., 'Make it sound more professional and use a futuristic AI robot image...'"></textarea>
+        <textarea id="feedbackText" rows="4" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none mb-4" placeholder="e.g., 'Make it sound more professional and use a futuristic AI robot image...'"></textarea>
+
+        <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 mb-6 flex gap-3 items-start">
+            <svg class="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-xs text-indigo-200/70 leading-relaxed">
+                <strong>Note:</strong> This feedback will permanently update the Agent's configuration for this specific day. If you want this change to apply to the entire week, you can go back to your dashboard later and click <strong>"Apply to All"</strong>.
+            </p>
+        </div>
 
         <div id="statusMessage" class="hidden mb-6 p-4 rounded-xl text-sm border"></div>
 

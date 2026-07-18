@@ -564,6 +564,19 @@ def regenerate_webhook(
     execution.execution_log = f"REGENERATION INITIATED: {req.feedback}"
     execution.status = "pending"
     approval.status = "awaiting_review"
+    
+    # Permanently inject the feedback into the agent's brain for this specific day!
+    if execution.publish_weekday is not None and execution.user_id is not None:
+        day_config = db.query(models.DayAgentConfig).filter(
+            models.DayAgentConfig.publish_weekday == execution.publish_weekday,
+            models.DayAgentConfig.user_id == execution.user_id
+        ).first()
+        
+        if day_config:
+            feedback_note = f"\n\n[CRITICAL CLIENT FEEDBACK]: {req.feedback}\n(You MUST adhere to this feedback for all future posters)."
+            day_config.writer_system_prompt += feedback_note
+            day_config.scout_system_prompt += feedback_note
+            
     db.commit()
 
     background_tasks.add_task(run_pipeline, execution.id)
