@@ -200,12 +200,11 @@ def run_pipeline(execution_id: int):
             db.commit()
 
         # --- 3. BUILD INTERACTIVE URLS ---
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
-        backend_url = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
+        from core.config import FRONTEND_URL, BACKEND_URL
         
-        edit_url = f"{frontend_url}/review?token={token}"
-        approve_url = f"{backend_url}/api/webhook/approve?token={token}"
-        share_url = f"{backend_url}/newsletters/edition_{execution.id}.html"
+        edit_url = f"{FRONTEND_URL}/review?token={token}"
+        approve_url = f"{BACKEND_URL}/api/webhook/approve?token={token}"
+        share_url = f"{BACKEND_URL}/newsletters/edition_{execution.id}.html"
 
         # --- 4. RENDER AND SAVE COMBINED HTML ---
         newsletter_html = render_dual_newsletter_email_html(
