@@ -295,13 +295,22 @@ def health_check(db: Session = Depends(get_db)):
 
 @app.get("/api/agents", response_model=list[DayAgentConfigResponse])
 def list_day_agents(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    configs = (
-        db.query(DayAgentConfig)
-        .filter(DayAgentConfig.user_id == current_user.id)
-        .order_by(DayAgentConfig.publish_weekday)
-        .all()
-    )
-    return [_config_response(cfg) for cfg in configs]
+    all_user_configs = db.query(DayAgentConfig).filter(DayAgentConfig.user_id == current_user.id).all()
+    seen_weekdays = set()
+    configs_to_keep = []
+    
+    all_user_configs.sort(key=lambda x: x.id, reverse=True)
+    
+    for cfg in all_user_configs:
+        if cfg.publish_weekday in seen_weekdays:
+            db.delete(cfg)
+        else:
+            seen_weekdays.add(cfg.publish_weekday)
+            configs_to_keep.append(cfg)
+    
+    db.commit()
+    configs_to_keep.sort(key=lambda x: x.publish_weekday)
+    return [_config_response(cfg) for cfg in configs_to_keep]
 
 @app.post("/api/agents", response_model=DayAgentConfigResponse)
 def create_day_agent(
@@ -310,27 +319,47 @@ def create_day_agent(
     current_user: User = Depends(get_current_user)
 ):
     from sqlalchemy.exc import IntegrityError
-    config = DayAgentConfig(
-        user_id=current_user.id,
-        publish_weekday=body.publish_weekday,
-        day_name=body.day_name,
-        edition_title=body.edition_title,
-        scout_system_prompt=body.scout_system_prompt,
-        writer_system_prompt=body.writer_system_prompt,
-        rss_feeds=json.dumps(body.rss_feeds),
-        is_active=body.is_active,
-        target_time=body.target_time,
-        target_phone_number=body.target_phone_number,
-        target_audiences=json.dumps(body.target_audiences),
-        client_logo_url=body.client_logo_url
-    )
-    db.add(config)
+    
+    config = db.query(DayAgentConfig).filter(
+        DayAgentConfig.user_id == current_user.id,
+        DayAgentConfig.publish_weekday == body.publish_weekday
+    ).first()
+    
+    if config:
+        config.day_name = body.day_name
+        config.edition_title = body.edition_title
+        config.scout_system_prompt = body.scout_system_prompt
+        config.writer_system_prompt = body.writer_system_prompt
+        config.rss_feeds = json.dumps(body.rss_feeds)
+        config.is_active = body.is_active
+        config.target_time = body.target_time
+        config.target_phone_number = body.target_phone_number
+        config.target_audiences = json.dumps(body.target_audiences)
+        if body.client_logo_url is not None:
+            config.client_logo_url = body.client_logo_url
+    else:
+        config = DayAgentConfig(
+            user_id=current_user.id,
+            publish_weekday=body.publish_weekday,
+            day_name=body.day_name,
+            edition_title=body.edition_title,
+            scout_system_prompt=body.scout_system_prompt,
+            writer_system_prompt=body.writer_system_prompt,
+            rss_feeds=json.dumps(body.rss_feeds),
+            is_active=body.is_active,
+            target_time=body.target_time,
+            target_phone_number=body.target_phone_number,
+            target_audiences=json.dumps(body.target_audiences),
+            client_logo_url=body.client_logo_url
+        )
+        db.add(config)
+    
     try:
         db.commit()
         db.refresh(config)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"You already have an agent scheduled for {body.day_name}. Please edit the existing one instead.")
+        raise HTTPException(status_code=400, detail=f"Database error while saving agent.")
         
     return _config_response(config)
 
