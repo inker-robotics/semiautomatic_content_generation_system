@@ -277,8 +277,11 @@ def run_pipeline(execution_id: int):
             for aud_key, img_path in png_paths.items():
                 if img_path:
                     # Create a nice Telegram caption
+                    aud_data = payload.get("editions", payload).get(aud_key, {})
+                    intro_text = aud_data.get("intro", "The AI has finished writing the newsletter.")
+                    
                     caption = f"🚀 <b>New AI Poster: {config_dict['edition_title']}</b>\n\n"
-                    caption += "The AI has finished writing the newsletter. Check it out on the web dashboard!\n"
+                    caption += f"{intro_text}\n\n"
                     caption += f"<a href='{share_url}'>🌐 Read Full Newsletter</a>"
                     
                     send_poster_to_telegram(img_path, caption)
