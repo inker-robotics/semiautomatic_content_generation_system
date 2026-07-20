@@ -278,11 +278,36 @@ def run_pipeline(execution_id: int):
                 if img_path:
                     # Create a nice Telegram caption
                     aud_data = payload.get("editions", payload).get(aud_key, {})
-                    intro_text = aud_data.get("intro", "The AI has finished writing the newsletter.")
                     
-                    caption = f"🚀 <b>New AI Poster: {config_dict['edition_title']}</b>\n\n"
-                    caption += f"{intro_text}\n\n"
-                    caption += f"<a href='{share_url}'>🌐 Read Full Newsletter</a>"
+                    if 'student' in aud_key.lower():
+                        label = "🎓 Student Edition"
+                    else:
+                        label = "🎓 Faculty Edition"
+                        
+                    sections = aud_data.get('sections', [])
+                    section_title = sections[0].get('title', '') if sections else ''
+                    section_body = sections[0].get('body', '') if sections else ''
+                    subject_line = aud_data.get('subject_line', '')
+                    source_url = sections[0].get('source_url', 'https://inkerrobotics.com') if sections else 'https://inkerrobotics.com'
+                    
+                    if source_url and not source_url.startswith("http"):
+                        source_url = "https://" + source_url
+                        
+                    import re
+                    # Format exactly like the screenshot: bold label, italic subject, bold title, regular body, all smushed into one paragraph
+                    smushed_body = f"<b>{label}</b> <i>{subject_line}</i> <b>{section_title}</b> {section_body}"
+                    smushed_body = re.sub(r'\s+', ' ', smushed_body).strip()
+                    
+                    top_part = f"Here is your daily {config_dict['edition_title']}!\n\n"
+                    url_part = f"\n\nRead the full article:\n<a href='{source_url}'>{source_url}</a> here!"
+                    
+                    # Telegram caption limit is 1024 chars. Calculate max body length safely.
+                    # We use raw URL in length calculation just to be safe with HTML tags.
+                    max_body_len = 950 - len(top_part) - len(f"\n\nRead the full article:\n{source_url} here!")
+                    if len(smushed_body) > max_body_len:
+                        smushed_body = smushed_body[:max_body_len-3] + "..."
+                        
+                    caption = top_part + smushed_body + url_part
                     
                     send_poster_to_telegram(img_path, caption)
             print(f"? WhatsApp dispatch completed with result: {wa_result}")
