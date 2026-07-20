@@ -252,161 +252,80 @@
             });
         }
 
-function renderDayView(idx) {
+        function renderDayView(idx) {
             const container = document.getElementById('singleCardContainer');
             container.innerHTML = '';
             
-            let agents = userAgents.filter(a => a.publish_weekday === idx);
-            if (agents.length === 0) {
-                agents = [null]; // Represent an empty new schedule
-            }
+            let agent = userAgents.find(a => a.publish_weekday === idx);
+            const isConfigured = agent && agent.is_active;
             
-            agents.forEach(agent => {
-                const isConfigured = agent && agent.is_active;
-                const agentId = agent ? agent.id : 'new';
-                
-                const title = agent ? agent.edition_title : '';
-                const time = agent ? agent.target_time : '09:00';
-                const phone = agent && agent.target_phone_number ? agent.target_phone_number : '';
-                const auds = agent ? agent.target_audiences.join(', ') : 'student, faculty';
-                const rss = agent ? agent.rss_feeds.join('\n') : '';
-                const scout = agent ? agent.scout_system_prompt : '';
-                const writer = agent ? agent.writer_system_prompt : '';
+            const title = agent ? agent.edition_title : '';
+            const time = agent ? agent.target_time : '09:00';
+            const phone = agent && agent.target_phone_number ? agent.target_phone_number : '';
+            const auds = agent ? agent.target_audiences.join(', ') : 'student, faculty';
+            const rss = agent ? agent.rss_feeds.join('\n') : '';
+            const scout = agent ? agent.scout_system_prompt : '';
+            const writer = agent ? agent.writer_system_prompt : '';
 
-                const card = document.createElement('div');
-                card.className = "w-full glass-panel rounded-[2rem] flex flex-col shadow-2xl overflow-hidden border-t border-slate-700/50 bg-slate-900/80 mb-6";
-                
-                card.innerHTML = `
-                    <!-- Header -->
-                    <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
-                        <h2 class="text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                            ${weekdays[idx]} Settings ${agentId !== 'new' ? '#' + agentId : '(New)'}
-                            ${!isConfigured ? '<span class="text-xs bg-slate-700 text-gray-300 px-2 py-1 rounded-md font-bold uppercase tracking-wider ml-2">Inactive</span>' : '<span class="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1 rounded-md font-bold uppercase tracking-wider ml-2 shadow-[0_0_10px_rgba(74,222,128,0.2)]">Active</span>'}
-                        </h2>
-                        ${isConfigured ? `<button type="button" onclick="testGenerate(${agentId})" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Test Now</button>` : ''}
-                    </div>
-
-                    <!-- Body / Form -->
-                    <div class="p-6 flex-grow overflow-y-auto no-scrollbar space-y-6">
-                        
-                        <!-- Magic Auto Pilot -->
-                        <div class="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 p-5 rounded-2xl">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xl">✨</span>
-                                <h3 class="font-bold text-indigo-300">Magic Auto-Fill</h3>
-                            </div>
-                            <p class="text-xs text-indigo-200/70 mb-3">Describe the topic. AI will auto-write professional prompts and find 3-5 reputable RSS feeds for you instantly.</p>
-                            <div class="flex gap-2">
-                                <input type="text" id="magicDesc-${agentId}" class="flex-grow bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none placeholder-gray-500" placeholder="e.g., Tech & Robotics News">
-                                <button type="button" onclick="runMagic('${agentId}')" id="magicBtn-${agentId}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all whitespace-nowrap">Auto-Fill</button>
-                            </div>
-                        </div>
-
-                        <form id="dayForm-${agentId}" class="space-y-5">
-                            
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Edition Title</label>
-                                    <input type="text" id="title-${agentId}" value="${title}" required placeholder="e.g. Inker Tech Brief" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex-1">
-                                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Time (IST)</label>
-                                        <input type="time" id="time-${agentId}" value="${time}" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">WhatsApp Delivery Number</label>
-                                        <input type="text" id="phone-${agentId}" value="${phone}" placeholder="+91..." class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Audiences (Comma separated)</label>
-                                    <input type="text" id="auds-${agentId}" value="${auds}" required placeholder="student, faculty" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">RSS Feeds (One per line)</label>
-                                    <textarea id="rss-${agentId}" rows="3" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="https://rss.feed.url/">${rss}</textarea>
-                                </div>
-                            </div>
-
-                            <!-- Prompts Section -->
-                            <div class="mt-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-4">
-                                <h4 class="text-sm font-bold text-gray-300 mb-2">Agent Instructions</h4>
-                                
-                                <div>
-                                    <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1">Scout Prompt</label>
-                                    <textarea id="scout-${agentId}" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-purple-500 focus:outline-none" required>${scout}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-green-400 uppercase mb-1">Writer Prompt</label>
-                                    <textarea id="writer-${agentId}" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-green-500 focus:outline-none" required>${writer}</textarea>
-                                </div>
-                            </div>
-
-                            <!-- Footer Actions -->
-                            <div class="pt-2 flex gap-3 flex-col sm:flex-row">
-                                <button type="button" onclick="saveDayAgent(${idx}, '${agentId}', event)" id="saveDayBtn-${agentId}" class="flex-1 bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]">
-                                    Save
-                                </button>
-                                ${agentId !== 'new' ? `<button type="button" onclick="deleteAgent(${agentId})" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]">Delete</button>` : ''}
-                            </div>
-                        </form>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            
-            // Add a button to add a new schedule
-            const addBtnContainer = document.createElement('div');
-            addBtnContainer.className = "flex justify-center mt-4";
-            addBtnContainer.innerHTML = `<button type="button" onclick="addBlankSchedule(${idx})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-indigo-500/30 transition-all">+ Add Another Schedule</button>`;
-            container.appendChild(addBtnContainer);
-        }
-
-        function addBlankSchedule(idx) {
-            // Append a fake agent to the userAgents and re-render
-            const container = document.getElementById('singleCardContainer');
-            
-            const agentId = 'new_' + Math.random().toString(36).substr(2, 9);
-            
             const card = document.createElement('div');
-            card.className = "w-full glass-panel rounded-[2rem] flex flex-col shadow-2xl overflow-hidden border-t border-slate-700/50 bg-slate-900/80 mb-6";
+            card.className = "w-full glass-panel rounded-[2rem] flex flex-col shadow-2xl overflow-hidden border-t border-slate-700/50 bg-slate-900/80 h-full";
             
             card.innerHTML = `
                 <!-- Header -->
                 <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
                     <h2 class="text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                        ${weekdays[idx]} Settings (New)
-                        <span class="text-xs bg-slate-700 text-gray-300 px-2 py-1 rounded-md font-bold uppercase tracking-wider ml-2">Unsaved</span>
+                        ${weekdays[idx]} Settings
+                        ${!isConfigured ? '<span class="text-xs bg-slate-700 text-gray-300 px-2 py-1 rounded-md font-bold uppercase tracking-wider ml-2">Inactive</span>' : '<span class="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1 rounded-md font-bold uppercase tracking-wider ml-2 shadow-[0_0_10px_rgba(74,222,128,0.2)]">Active</span>'}
                     </h2>
+                    ${isConfigured ? `<button type="button" onclick="testGenerate(${idx})" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Test Now</button>` : ''}
                 </div>
 
                 <!-- Body / Form -->
                 <div class="p-6 flex-grow overflow-y-auto no-scrollbar space-y-6">
-                    <form id="dayForm-${agentId}" class="space-y-5">
+                    
+                    <!-- Magic Auto Pilot -->
+                    <div class="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 p-5 rounded-2xl">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">🪄</span>
+                            <h3 class="font-bold text-indigo-300">Magic Auto-Fill</h3>
+                        </div>
+                        <p class="text-xs text-indigo-200/70 mb-3">Describe the topic. AI will auto-write professional prompts and find 3-5 reputable RSS feeds for you instantly.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="magicDesc" class="flex-grow bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none placeholder-gray-500" placeholder="e.g., Tech & Robotics News">
+                            <button type="button" onclick="runMagic()" id="magicBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all whitespace-nowrap">Auto-Fill</button>
+                        </div>
+                    </div>
+
+                    <form id="dayForm" class="space-y-5">
                         
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Edition Title</label>
-                                <input type="text" id="title-${agentId}" value="" required placeholder="e.g. Inker Tech Brief" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
+                                <input type="text" id="title" value="${title}" required placeholder="e.g. Inker Tech Brief" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
                             </div>
+
                             <div class="flex gap-4">
                                 <div class="flex-1">
-                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Time (IST)</label>
-                                    <input type="time" id="time-${agentId}" value="09:00" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Send Time (Daily)</label>
+                                    <input type="time" id="time" value="${time}" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">WhatsApp Delivery Number</label>
-                                    <input type="text" id="phone-${agentId}" value="" placeholder="+91..." class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">WhatsApp #</label>
+                                    <input type="text" id="phone" value="${phone}" placeholder="+1234567890" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
                                 </div>
                             </div>
+                            
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Audiences (Comma separated)</label>
-                                <input type="text" id="auds-${agentId}" value="student, faculty" required placeholder="student, faculty" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Audiences</label>
+                                <input type="text" id="auds" value="${auds}" required placeholder="e.g. students, faculty" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm">
                             </div>
+
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">RSS Feeds (One per line)</label>
-                                <textarea id="rss-${agentId}" rows="3" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="https://rss.feed.url/"></textarea>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 flex justify-between">
+                                    <span>RSS Feeds</span>
+                                    <span class="text-[10px] text-gray-500 normal-case font-normal">(One URL per line)</span>
+                                </label>
+                                <textarea id="rss" rows="3" required class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-blue-300 focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="https://rss.feed.url/">${rss}</textarea>
                             </div>
                         </div>
 
@@ -416,25 +335,28 @@ function renderDayView(idx) {
                             
                             <div>
                                 <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1">Scout Prompt</label>
-                                <textarea id="scout-${agentId}" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-purple-500 focus:outline-none" required></textarea>
+                                <textarea id="scout" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-purple-500 focus:outline-none" required>${scout}</textarea>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-green-400 uppercase mb-1">Writer Prompt</label>
-                                <textarea id="writer-${agentId}" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-green-500 focus:outline-none" required></textarea>
+                                <textarea id="writer" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-gray-300 focus:ring-1 focus:ring-green-500 focus:outline-none" required>${writer}</textarea>
                             </div>
                         </div>
 
                         <!-- Footer Actions -->
                         <div class="pt-2 flex gap-3 flex-col sm:flex-row">
-                            <button type="button" onclick="saveDayAgent(${idx}, '${agentId}', event)" id="saveDayBtn-${agentId}" class="flex-1 bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]">
-                                Save
+                            <button type="button" onclick="saveDayAgent(${idx}, event)" id="saveDayBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]">
+                                Save for ${weekdays[idx]}
+                            </button>
+                            <button type="button" onclick="saveGlobalAgent(event)" id="saveGlobalBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98]">
+                                Apply to All Days
                             </button>
                         </div>
+                        ${isConfigured ? `<div class="text-center mt-2"><button type="button" onclick="deleteAgent(${agent.id})" class="text-xs text-red-400 hover:text-red-300 underline">Turn off for ${weekdays[idx]}</button></div>` : ''}
                     </form>
                 </div>
             `;
-            // Insert it before the add button
-            container.insertBefore(card, container.lastChild);
+            container.appendChild(card);
         }
 
         async function loadExecutions(idx) {
@@ -458,7 +380,7 @@ function renderDayView(idx) {
                 container.innerHTML = '';
                 executions.forEach(exec => {
                     const statusColor = exec.status === 'completed' ? 'text-green-400' : (exec.status === 'error' || exec.status === 'failed' ? 'text-red-400' : 'text-yellow-400');
-                    const statusIcon = exec.status === 'completed' ? '✓' : (exec.status === 'error' || exec.status === 'failed' ? '❌' : '⏳');
+                    const statusIcon = exec.status === 'completed' ? '✅' : (exec.status === 'error' || exec.status === 'failed' ? '❌' : '⏳');
                     
                     const el = document.createElement('div');
                     el.className = "bg-slate-950/50 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 transition-all hover:bg-slate-800/50";
@@ -490,8 +412,8 @@ function renderDayView(idx) {
             }
         }
 
-        async function runMagic(agentId) {
-            const descInput = document.getElementById(`magicDesc-${agentId}`);
+        async function runMagic() {
+            const descInput = document.getElementById('magicDesc');
             const desc = descInput.value.trim();
             if(!desc) {
                 alert("Please type a topic first! (e.g. 'Robotics News')");
@@ -499,7 +421,7 @@ function renderDayView(idx) {
                 return;
             }
             
-            const btn = document.getElementById(`magicBtn-${agentId}`);
+            const btn = document.getElementById('magicBtn');
             btn.innerHTML = `<span class="animate-pulse">Thinking...</span>`;
             btn.disabled = true;
             
@@ -514,113 +436,141 @@ function renderDayView(idx) {
                 
                 const data = await res.json();
                 
-                document.getElementById(`scout-${agentId}`).value = data.scout_system_prompt || '';
-                document.getElementById(`writer-${agentId}`).value = data.writer_system_prompt || '';
+                document.getElementById('scout').value = data.scout_system_prompt || '';
+                document.getElementById('writer').value = data.writer_system_prompt || '';
                 
                 if (data.rss_feeds && Array.isArray(data.rss_feeds)) {
-                    document.getElementById(`rss-${agentId}`).value = data.rss_feeds.join('\n');
+                    document.getElementById('rss').value = data.rss_feeds.join('\n');
                 }
                 
-                const titleEl = document.getElementById(`title-${agentId}`);
+                const titleEl = document.getElementById('title');
                 if(!titleEl.value) {
                     titleEl.value = desc.charAt(0).toUpperCase() + desc.slice(1) + " Brief";
                 }
 
-                const phoneEl = document.getElementById(`phone-${agentId}`);
+                const phoneEl = document.getElementById('phone');
                 if(!phoneEl.value) {
                     phoneEl.value = "+919495614755";
                 }
 
-                showToast("Magic Auto-Fill Applied! ✨");
+                alert("Magic Complete! Prompts and RSS feeds have been auto-filled. Please review them and click Save.");
             } catch(e) {
-                alert("Error: " + e.message);
+                alert(e.message);
             } finally {
                 btn.innerHTML = `Auto-Fill`;
                 btn.disabled = false;
             }
         }
 
-        function getPayload(idx, agentId) {
+        function getPayload(idx) {
             return {
                 publish_weekday: idx,
                 day_name: weekdays[idx],
-                edition_title: document.getElementById(`title-${agentId}`).value,
-                scout_system_prompt: document.getElementById(`scout-${agentId}`).value,
-                writer_system_prompt: document.getElementById(`writer-${agentId}`).value,
-                rss_feeds: document.getElementById(`rss-${agentId}`).value.split('\n').map(l=>l.trim()).filter(l=>l),
-                target_audiences: document.getElementById(`auds-${agentId}`).value.split(',').map(a=>a.trim()).filter(a=>a),
-                target_time: document.getElementById(`time-${agentId}`).value,
-                target_phone_number: document.getElementById(`phone-${agentId}`).value || null,
+                edition_title: document.getElementById('title').value,
+                scout_system_prompt: document.getElementById('scout').value,
+                writer_system_prompt: document.getElementById('writer').value,
+                rss_feeds: document.getElementById('rss').value.split('\n').map(l=>l.trim()).filter(l=>l),
+                target_audiences: document.getElementById('auds').value.split(',').map(a=>a.trim()).filter(a=>a),
+                target_time: document.getElementById('time').value,
+                target_phone_number: document.getElementById('phone').value || null,
                 is_active: true
             };
         }
 
-        async function saveDayAgent(idx, agentId, e) {
+        async function saveDayAgent(idx, e) {
             if(e) e.preventDefault();
             
-            const form = document.getElementById(`dayForm-${agentId}`);
-            if(!form.checkValidity()) {
-                form.reportValidity();
+            if(!document.getElementById('dayForm').checkValidity()) {
+                document.getElementById('dayForm').reportValidity();
                 return;
             }
 
-            const btn = document.getElementById(`saveDayBtn-${agentId}`);
+            const btn = document.getElementById('saveDayBtn');
             const ogText = btn.innerText;
             btn.innerText = "Saving...";
             
-            const payload = getPayload(idx, agentId);
-            
             try {
-                let url = API_BASE + '/agents';
-                let method = 'POST';
-                if(agentId !== 'new' && !agentId.startsWith('new_')) {
-                    url += '/' + agentId;
-                    method = 'PUT';
-                }
-
-                const res = await fetch(url, {
+                const existingAgent = userAgents.find(a => a.publish_weekday === idx);
+                const payload = getPayload(idx);
+                
+                const method = existingAgent ? 'PUT' : 'POST';
+                const url = existingAgent ? `/agents/${existingAgent.id}` : `/agents`;
+                
+                const res = await fetch(API_BASE + url, {
                     method: method,
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                if(!res.ok) {
-                    const data = await res.json();
-                    throw new Error(data.detail || "Failed to save");
-                }
+                if(!res.ok) throw new Error(`Failed to save ${weekdays[idx]}`);
                 
-                showToast("Schedule Saved! 🚀");
-                await loadAgents(); // reload everything
+                await loadAgents();
+                alert(`Saved settings for ${weekdays[idx]}!`);
+            } catch(err) {
+                alert(err.message);
+            } finally {
+                if(btn) btn.innerText = ogText;
+            }
+        }
+
+        async function saveGlobalAgent(e) {
+            if(e) e.preventDefault();
+            
+            if(!document.getElementById('dayForm').checkValidity()) {
+                document.getElementById('dayForm').reportValidity();
+                return;
+            }
+            
+            const btn = document.getElementById('saveGlobalBtn');
+            const ogText = btn.innerText;
+            btn.innerText = "Applying to all...";
+            
+            try {
+                const promises = weekdays.map(async (dayName, idx) => {
+                    const existingAgent = userAgents.find(a => a.publish_weekday === idx);
+                    const payload = getPayload(idx);
+
+                    const method = existingAgent ? 'PUT' : 'POST';
+                    const url = existingAgent ? `/agents/${existingAgent.id}` : `/agents`;
+                    
+                    const res = await fetch(API_BASE + url, {
+                        method: method,
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if(!res.ok) throw new Error(`Failed to save ${dayName}`);
+                });
                 
-            } catch(e) {
-                alert("Error saving: " + e.message);
-                btn.innerText = ogText;
+                await Promise.all(promises);
+                await loadAgents();
+                alert("Successfully applied settings to all 7 days!");
+                
+            } catch(err) {
+                alert(err.message);
+            } finally {
+                if(btn) btn.innerText = ogText;
             }
         }
 
         async function deleteAgent(id) {
-            if(!confirm("Are you sure you want to permanently delete this schedule?")) return;
+            if(!confirm("Are you sure you want to delete this agent? It will become 'Unset'.")) return;
             try {
-                const res = await fetch(API_BASE + `/agents/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if(!res.ok) throw new Error("Failed to delete");
-                showToast("Schedule Deleted.");
-                await loadAgents();
-            } catch(e) {
-                alert("Error deleting: " + e.message);
+                await fetch(API_BASE + `/agents/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }});
+                loadAgents();
+            } catch (e) {
+                alert(e.message);
             }
         }
 
-        async function testGenerate(agentId) {
-            if(!confirm("Trigger AI to fetch news and send WhatsApp messages for this schedule right now?")) return;
+        async function testGenerate(weekdayIndex) {
+            if(!confirm("Trigger AI to fetch news and send WhatsApp messages for this day right now?")) return;
             
             try {
                 const res = await fetch(API_BASE + '/generate/manual', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ config_id: agentId })
+                    body: JSON.stringify({ publish_weekday: weekdayIndex })
                 });
                 if(!res.ok) {
                     const data = await res.json();
