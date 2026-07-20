@@ -23,11 +23,20 @@ def format_whatsapp_message(edition: dict, label: str) -> str:
 def get_source_url_suffix(edition: dict) -> str:
     sections = edition.get('sections', [])
     if sections:
-        url = sections[0].get("source_url", "inkerrobotics.com")
-        # Meta requires full https:// scheme to make the link tappable on Android
-        pass
+        url = sections[0].get("source_url", "https://inkerrobotics.com")
+        if url and not url.startswith("http"):
+            url = "https://" + url
+            
+        # The Meta WhatsApp template has the word 'here!' hardcoded right after the URL variable.
+        # This breaks the link because it becomes something like `https://example.comhere!`.
+        # To fix this without recreating the approved Meta template, we append a dummy query parameter.
+        if "?" in url:
+            url += "&read="
+        else:
+            url += "?read="
+            
         return url
-    return "inkerrobotics.com"
+    return "https://inkerrobotics.com?read="
 
 def upload_whatsapp_media(filepath: str, phone_number_id: str, access_token: str) -> str | None:
     """Uploads a media file to Meta and returns the Media ID."""
